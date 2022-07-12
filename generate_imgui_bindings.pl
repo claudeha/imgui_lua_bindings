@@ -196,18 +196,75 @@ sub generateImguiGeneric {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "bool");
         push(@after, "PUSH_BOOL(ret)");
+      } elsif ($retType =~ /^int$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "int");
+        push(@after, "PUSH_NUMBER(ret)");
       } elsif ($retType =~ /^float$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "float");
         push(@after, "PUSH_NUMBER(ret)");
+      } elsif ($retType =~ /^double$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "double");
+        push(@after, "PUSH_NUMBER(ret)");
       } elsif ($retType =~ /^ImVec2$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "ImVec2");
-        push(@after, "PUSH_NUMBER(ret.x)");
-        push(@after, "PUSH_NUMBER(ret.y)");
+        push(@after, "PUSH_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+      } elsif ($retType =~ /^ImVec4$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "ImVec4");
+        push(@after, "PUSH_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret.z)");
+        push(@after, "SET_TABLE_FIELD(\"z\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret.w)");
+        push(@after, "SET_TABLE_FIELD(\"w\")");
       } elsif ($retType =~ /^(unsigned int|ImGuiID|ImU32)$/) {
         $callMacro = "${callPrefix}CALL_FUNCTION";
         push(@funcArgs, "unsigned int");
+        push(@after, "PUSH_NUMBER(ret)");
+      } elsif ($retType =~ /^ImGuiViewport\*$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "ImGuiViewport*");
+        push(@after, "PUSH_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret->Flags)");
+        push(@after, "SET_TABLE_FIELD(\"Flags\")");
+        push(@after, "PUSH_TABLE_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret->Pos.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret->Pos.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+        push(@after, "SET_TABLE_FIELD(\"Pos\")");
+        push(@after, "PUSH_TABLE_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret->Size.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret->Size.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+        push(@after, "SET_TABLE_FIELD(\"Size\")");
+        push(@after, "PUSH_TABLE_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret->WorkPos.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret->WorkPos.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+        push(@after, "SET_TABLE_FIELD(\"WorkPos\")");
+        push(@after, "PUSH_TABLE_TABLE");
+        push(@after, "PUSH_TABLE_NUMBER(ret->WorkSize.x)");
+        push(@after, "SET_TABLE_FIELD(\"x\")");
+        push(@after, "PUSH_TABLE_NUMBER(ret->WorkSize.y)");
+        push(@after, "SET_TABLE_FIELD(\"y\")");
+        push(@after, "SET_TABLE_FIELD(\"WorkSize\")");
+      } elsif ($retType =~ /^Im[a-zA-Z]+Flags$/) {
+        $callMacro = "${callPrefix}CALL_FUNCTION";
+        push(@funcArgs, "$retType");
         push(@after, "PUSH_NUMBER(ret)");
       } else {
         print "// Unsupported return type $retType\n";
@@ -230,7 +287,7 @@ sub generateImguiGeneric {
           push(@before, "FLOAT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_FLOAT_POINTER($name)");
-          #float a or float a = number
+        #float a or float a = number
         } elsif ($args[$i] =~ m/^ *float *([^ =\[]*)( *= *[^ ]*|)$/) {
           my $name = $1;
           if ($2 =~ m/^ *= *([^ ]*)$/) {
@@ -239,7 +296,34 @@ sub generateImguiGeneric {
             push(@before, "NUMBER_ARG($name)");
           }
           push(@funcArgs, $name);
-          # const char* a or const char* a = NULL or "blah"
+        #float& a or float& a = number
+        } elsif ($args[$i] =~ m/^ *const float& *([^ =\[]*)( *= *[^ ]*|)$/) {
+          my $name = $1;
+          if ($2 =~ m/^ *= *([^ ]*)$/) {
+            push(@before, "OPTIONAL_NUMBER_ARG($name, $1)");
+          } else {
+            push(@before, "NUMBER_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        #double a or double a = number
+        } elsif ($args[$i] =~ m/^ *double *([^ =\[]*)( *= *[^ ]*|)$/) {
+          my $name = $1;
+          if ($2 =~ m/^ *= *([^ ]*)$/) {
+            push(@before, "OPTIONAL_NUMBER_ARG($name, $1)");
+          } else {
+            push(@before, "NUMBER_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        #double& a or double& a = number
+        } elsif ($args[$i] =~ m/^ *const double& *([^ =\[]*)( *= *[^ ]*|)$/) {
+          my $name = $1;
+          if ($2 =~ m/^ *= *([^ ]*)$/) {
+            push(@before, "OPTIONAL_NUMBER_ARG($name, $1)");
+          } else {
+            push(@before, "NUMBER_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        # const char* a or const char* a = NULL or "blah"
         } elsif ($args[$i] =~ m/^ *const char\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
           my $name = $1;
           if ($2 =~ m/^ *= *NULL$/) {
@@ -248,10 +332,16 @@ sub generateImguiGeneric {
             push(@before, "LABEL_ARG($name)");
           }
           push(@funcArgs, $name);
-        #const ImVec2& with default or not
-        } elsif ($args[$i] =~ m/^ *const ImVec2& ([^ ]*) *(= * ImVec2 [^ ]* [^ ]*|) *$/) {
+        # returnable char* a or char* a = NULL
+        } elsif ($args[$i] =~ m/^ *char\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
           my $name = $1;
-          if ($2 =~ m/^= * ImVec2 ([^ ]*) ([^ ]*)$/) {
+          push(@before, "IOTEXT_ARG($name)");
+          push(@funcArgs, $name);
+          push(@after, "END_IOTEXT($name)");
+        #const ImVec2& with default or not
+        } elsif ($args[$i] =~ m/^ *const ImVec2& ([^ ]*) *(= * ImVec2 [^ ]*  [^ ]*|= * ImVec2 [^ ]* [^ ]*|) *$/) {
+          my $name = $1;
+          if (($2 =~ m/^= *ImVec2 ([^ ]*) +([^ ]*)$/)) {
             push(@before, "OPTIONAL_IM_VEC_2_ARG($name, $1, $2)");
           } else {
             push(@before, "IM_VEC_2_ARG($name)");
@@ -271,18 +361,29 @@ sub generateImguiGeneric {
             push(@before, "IM_VEC_4_ARG($name)");
           }
           push(@funcArgs, $name);
-          # one of the various enums
-          # we are handling these as ints
-        } elsif ($args[$i] =~ m/^ *(ImGuiWindowFlags|ImGuiCol|ImGuiStyleVar|ImGuiKey|ImGuiAlign|ImGuiColorEditMode|ImGuiMouseCursor|ImGuiSetCond|ImGuiInputTextFlags|ImGuiSelectableFlags) ([^ ]*)( = 0|) *$/) {
-         #These are ints
-         my $name = $2;
-          if ($3 =~ m/^ = 0$/) {
-            push(@before, "OPTIONAL_INT_ARG($name, 0)");
+        # one of the various enums
+        # we are handling these as ints
+        } elsif ($args[$i] =~ m/^ *(ImGuiCol|ImGuiCond|ImGuiDataType|ImGuiDir|ImGuiKey|ImGuiNavInput|ImGuiMouseButton|ImGuiMouseCursor|ImGuiSortDirection|ImGuiStyleVar|ImGuiTableBgTarget) ([^ ]*)( = [0-9]*|) *$/) {
+          #These are ints
+          my $name = $2;
+          if ($3 =~ m/^ = ([0-9]*)$/) {
+            push(@before, "OPTIONAL_INT_ARG($name, $1)");
           } else {
             push(@before, "INT_ARG($name)");
           }
           push(@funcArgs, $name);
-          #int with default value or not
+        # generic enum flags
+        # we are handling these as ints
+        } elsif ($args[$i] =~ m/^ *Im[a-zA-Z]+Flags ([^ ]*)( = [0-9]*|) *$/) {
+          #These are ints
+          my $name = $1;
+          if($2 =~ m/^ = ([0-9]*)$/) {
+            push(@before, "OPTIONAL_INT_ARG($name, $1)");
+          } else {
+            push(@before, "INT_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        #int with default value or not
         } elsif ($args[$i] =~ m/^ *int ([^ =\[]*)( = [^ ]*|) *$/) {
           my $name = $1;
           if ($2 =~ m/^ = ([^ ]*)$/) {
@@ -292,9 +393,9 @@ sub generateImguiGeneric {
           }
           push(@funcArgs, $name);
         #unsigned int with default value or not
-        } elsif ($args[$i] =~ m/^ *(unsigned +int|ImGuiID|ImU32) ([^ =\[]*)( = [^ ]*|) *$/) {
+        } elsif ($args[$i] =~ m/^ *(unsigned +int|ImGuiID|ImU32|size_t) ([^ =\[]*)( = [^ ]*|) *$/) {
           my $name = $2;
-          if ($2 =~ m/^ = ([^ ]*)$/) {
+          if ($3 =~ m/^ = ([^ ]*)$/) {
             push(@before, "OPTIONAL_UINT_ARG($name, $1)");
           } else {
             push(@before, "UINT_ARG($name)");
@@ -307,7 +408,7 @@ sub generateImguiGeneric {
           my $name = $2;
           push(@before, "IM_TEXTURE_ID_ARG($name)");
           push(@funcArgs, $name);
-          # bool with default value or not
+        # bool with default value or not
         } elsif ($args[$i] =~ m/^ *bool ([^ =\[]*)( *= *true| *= *false|) *$/) {
           my $name = $1;
           if ($2 =~ m/^ *= *([^ ]*)$/) {
@@ -328,9 +429,31 @@ sub generateImguiGeneric {
           push(@before, "UINT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_UINT_POINTER($name)");
-          # we don't support variadic functions yet but we let you use it without extra variables
-        } elsif ($args[$i] =~ m/^ *\.\.\. *$/) {
+        # const void* or void * a types and can have default value or not
+        } elsif ($args[$i] =~ m/^ *(const|) *void *\* *([^ =\[]*)( *= *[^ ]*|)$/) {
+          my $name = $2;
+          if ($3 =~ m/^ *= *([^ ]*)$/) {
+            push(@before, "OPTIONAL_VOID_ARG($name, $1)");
+          } else {
+            push(@before, "VOID_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        # we don't support callbacks yet, so we at least can let you use it without applying the callback
+        } elsif ($args[$i] =~ m/^ *(Im[^ ]*Callback) *([^ =\[]*)( *= *[^ ]*) *$/) {
+          my $callback = $1;
+          my $name = $2;
+          push(@before, "CALLBACK_STUB($name, $callback)");
+          push(@funcArgs, $name);
+          print "// Optional callback arguments aren't suppported but here it is anyway\n";
+        # we don't support variadic functions yet but we let you use it without extra variables
+        } elsif ($args[$i] =~ m/\.{3}/) {
           print "// Variadic functions aren't suppported but here it is anyway\n";
+        #} elsif ($args[$i] =~ m/va_list/) {
+        #  print "// Variadic functions aren't suppported but here it is anyway\n";
+
+        # Ignore unused ImGui optional arguments
+        } elsif ($args[$i] =~ m/^ *Im[^ ]*\* *([^ =\[]*)( = [^ ]*) *$/) {
+          print "// Unimplemened optional arguments aren't suppported but here it is anyway\n";
         } else {
           print "// Unsupported arg type " . $args[$i] . "\n";
           $shouldPrint = 0;
