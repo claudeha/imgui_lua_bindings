@@ -110,7 +110,7 @@ imgui.End()
 
 ## How to build:
 
-Generate iterator file (or use the one for 1.50 already in the repo)
+Generate iterator file (or use the one for 1.85 already in the repo)
 ```
 ./generate_imgui_bindings.pl <../imgui/imgui.h >imgui_iterator.inl
 ```
