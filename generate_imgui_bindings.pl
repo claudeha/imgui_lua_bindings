@@ -287,6 +287,11 @@ sub generateImguiGeneric {
           push(@before, "FLOAT_POINTER_ARG($name)");
           push(@funcArgs, $name);
           push(@after, "END_FLOAT_POINTER($name)");
+        # float & x
+        } elsif ($args[$i] =~ m/^ *float *\& *([^ =\[]*)$/) {
+          my $name = $1;
+          push(@before, "FLOAT_ARG($name)");
+          push(@funcArgs, $name);
         #float a or float a = number
         } elsif ($args[$i] =~ m/^ *float *([^ =\[]*)( *= *[^ ]*|)$/) {
           my $name = $1;
@@ -294,6 +299,19 @@ sub generateImguiGeneric {
             push(@before, "OPTIONAL_NUMBER_ARG($name, $1)");
           } else {
             push(@before, "NUMBER_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        #float a[n]
+        } elsif ($args[$i] =~ m/^ *float *([^ =\[]*) *\[([0-9]*)\]$/) {
+          my $name = $1;
+          my $count = $2;
+
+          push(@before, "FLOAT_ARRAY_DEF($name,$count)");
+
+          my @it = (0..($count-1));
+          for(@it){
+            push(@before, "FLOAT_ARRAY_ARG($name,$_)");
+            push(@after, "PUSH_NUMBER($name [ $_ ])");
           }
           push(@funcArgs, $name);
         #float& a or float& a = number
@@ -326,8 +344,9 @@ sub generateImguiGeneric {
         # const char* a or const char* a = NULL or "blah"
         } elsif ($args[$i] =~ m/^ *const char\* *([^ =\[]*)( *= *(NULL|".*")|) *$/) {
           my $name = $1;
-          if ($2 =~ m/^ *= *NULL$/) {
-            push(@before, "OPTIONAL_LABEL_ARG($name)");
+          if ($2 =~ m/^ *= *(NULL|".*")$/) {
+            my $def = $1;
+            push(@before, "OPTIONAL_LABEL_ARG($name,$def)");
           } else {
             push(@before, "LABEL_ARG($name)");
           }
@@ -390,6 +409,19 @@ sub generateImguiGeneric {
             push(@before, "OPTIONAL_INT_ARG($name, $1)");
           } else {
             push(@before, "INT_ARG($name)");
+          }
+          push(@funcArgs, $name);
+        #int a[n]
+        } elsif ($args[$i] =~ m/^ *int ([^ =\[]*) *\[([0-9]*)\]$/) {
+          my $name = $1;
+          my $count = $2;
+
+          push(@before, "INT_ARRAY_DEF($name,$count)");
+
+          my @it = (0..($count-1));
+          for(@it){
+            push(@before, "INT_ARRAY_ARG($name,$_)");
+            push(@after, "PUSH_NUMBER($name [ $_ ])");
           }
           push(@funcArgs, $name);
         #unsigned int with default value or not
