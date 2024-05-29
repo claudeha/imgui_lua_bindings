@@ -41,7 +41,8 @@ sub generateNamespaceImgui {
   my %beginN = (
     "TreeNode" => "Tree",
     "TreePush" => "Tree",
-    "PushStyleVar" => "StyleVar"
+    "PushStyleVar" => "StyleVar",
+    "ItemTooltip" => "Tooltip"
     );
   my %changeN = (
     "Tree" => "TreePop",
@@ -55,7 +56,9 @@ sub generateNamespaceImgui {
     "PopupModal" => "Popup",
     "PopupContextItem" => "Popup",
     "PopupContextWindow" => "Popup",
-    "PopupContextVoid" => "Popup" );
+    "PopupContextVoid" => "Popup",
+    "ItemTooltip" => "Tooltip"
+    );
 
   generateImguiGeneric(
     $lineCaptureRegex,
