@@ -24,10 +24,13 @@ sub generateNamespaceImgui {
 #define bannedNames with keys of functions to exclude them
 # EXAMPLE:
   my %bannedNames = (
+    # float& argument not handled properly
     "ColorConvertRGBtoHSV" => "banned",
     "ColorConvertHSVtoRGB" => "banned",
+    # flags=0 argument not handled properly
     "IsWindowFocused" => "banned",
     "IsWindowHovered" => "banned",
+    # ?
     "NewFrame" => "banned",
     "Render" => "banned",
     "Shutdown" => "banned" );
