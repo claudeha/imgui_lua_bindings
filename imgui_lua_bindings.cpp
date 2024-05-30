@@ -114,6 +114,9 @@ static int impl_##name(lua_State *L) { \
 #define NUMBER_ARG(name)\
     lua_Number name = luaL_checknumber(L, arg++);
 
+#define FLOAT_ARG(name) \
+    const float name = (float)luaL_checknumber(L, arg++);
+
 #define FLOAT_ARRAY_DEF(name, size)\
     float name[size];
 
@@ -382,6 +385,8 @@ static const struct luaL_Reg imguilib [] = {
 #define OPTIONAL_IM_VEC_4_ARG(name, x, y, z, w)
 #undef NUMBER_ARG
 #define NUMBER_ARG(name)
+#undef FLOAT_ARG
+#define FLOAT_ARG(name)
 #undef FLOAT_ARRAY_DEF
 #define FLOAT_ARRAY_DEF(name, size)
 #undef FLOAT_ARRAY_ARG
