@@ -18,6 +18,10 @@ extern "C" {
 // to keep track of end and begins and clean up the imgui stack
 // if lua errors
 
+
+// define this global before you call RunString or LoadImGuiBindings
+lua_State* lState;
+
 #ifdef ENABLE_IM_LUA_END_STACK
 // Stack for imgui begin and end
 std::deque<int> endStack;
@@ -629,6 +633,14 @@ extern "C" int luaopen_imgui(lua_State *L) {
     luaL_newlib(L, imguilib);
     PushImguiEnums(L, "constant");
     return 1;
+}
+
+void LoadImguiBindings() {
+    if (!lState) {
+        fprintf(stderr, "You didn't assign the global lState, either assign that or refactor LoadImguiBindings and RunString\n");
+    }
+    luaopen_imgui(lState);
+    lua_setglobal(lState, "imgui");
 }
 
 std::vector<int> drawList;
